@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Database Carte - Vita</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    input { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 20px; }
+    .card, .deck-card { margin-bottom: 15px; padding: 10px; background: #f9f9f9; border-radius: 8px; }
+    .button { margin-top: 5px; padding: 4px 8px; font-size: 14px; cursor: pointer; }
+    #mazzo { margin-top: 40px; }
+  </style>
+</head>
+<body>
+  <h1>Carte Vita</h1>
+  <input id="searchBar" placeholder="Cerca una carta..." />
+  <div id="risultati"></div>
+
+  <h2>🧺 Mazzo</h2>
+  <div id="mazzo"></div>
+
+  <script>
+    let tutteLeCarte = [];
+    let mazzo = [];
+
+    fetch("cards.json")
+      .then(res => res.json())
+      .then(data => {
+        tutteLeCarte = data;
+        mostraCarte(data);
+      });
+
+    function mostraCarte(carte) {
+      const div = document.getElementById("risultati");
+      div.innerHTML = "";
+      carte.forEach((carta, index) => {
+        const cardDiv = document.createElement("div");
+        cardDiv.classList.add("card");
+
+        cardDiv.innerHTML = `
+          <strong>${carta.nome}</strong><br>
+          <em>${carta.tipo}</em><br>
+          ${carta.effetti}<br>
+        `;
+
+        const btn = document.createElement("button");
+        btn.textContent = "➕ Aggiungi al mazzo";
+        btn.classList.add("button");
+        btn.addEventListener("click", () => {
+          mazzo.push(carta);
+          mostraMazzo();
+        });
+
+        cardDiv.appendChild(btn);
+        div.appendChild(cardDiv);
+      });
+    }
+
+    function mostraMazzo() {
+      const div = document.getElementById("mazzo");
+      div.innerHTML = "";
+      mazzo.forEach((carta, i) => {
+        const cardDiv = document.createElement("div");
+        cardDiv.classList.add("deck-card");
+
+        cardDiv.innerHTML = `
+          <strong>${carta.nome}</strong> - <em>${carta.tipo}</em>
+          <br>${carta.effetti}<br>
+        `;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "❌ Rimuovi";
+        removeBtn.classList.add("button");
+        removeBtn.addEventListener("click", () => {
+          mazzo.splice(i, 1);
+          mostraMazzo();
+        });
+
+        cardDiv.appendChild(removeBtn);
+        div.appendChild(cardDiv);
+      });
+    }
+
+    document.getElementById("searchBar").addEventListener("input", function() {
+      const q = this.value.toLowerCase();
+      const filtrate = tutteLeCarte.filter(c =>
+        c.nome.toLowerCase().includes(q) ||
+        c.effetti.toLowerCase().includes(q) ||
+        c.tipo.toLowerCase().includes(q)
+      );
+      mostraCarte(filtrate);
+    });
+  </script>
+</body>
+<
