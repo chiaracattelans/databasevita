@@ -37,8 +37,9 @@
       padding: 1.5em;
       border: 2px solid black;
       z-index: 100;
-      max-height: 70%;
-      overflow-y: auto;
+      max-width: 80%;
+      max-height: 80%;
+      overflow: auto;
     }
     .overlay {
       display: none;
@@ -76,7 +77,7 @@
 
     document.getElementById('search').addEventListener('input', function () {
       const testo = this.value.toLowerCase();
-      const filtrate = tutteLeCarte.filter(c =>
+      const filtrate = tutteLeCarte.filter(c => 
         (c["NOME CARTA"] || "").toLowerCase().includes(testo) ||
         (c.EFFETTI || "").toLowerCase().includes(testo) ||
         (c["ABILITA'"] || "").toLowerCase().includes(testo)
@@ -98,11 +99,9 @@
         if (carta["ABILITA'"]) html += `<div><strong>Abilità:</strong> ${carta["ABILITA'"]}</div>`;
         if (carta.EFFETTI) html += `<div><strong>Effetti:</strong> ${carta.EFFETTI}</div>`;
 
-        html += `
-          <button onclick="aggiungiAlMazzo('${carta["NOME CARTA"]}')">Aggiungi al mazzo</button>
-          <button onclick="apriPopup(${index})">Dettagli</button>
-        `;
-
+        html += `<button onclick="aggiungiAlMazzo('${carta["NOME CARTA"]}')">Aggiungi al mazzo</button>`;
+        html += `<button onclick="apriPopup(${index})">Dettagli</button>`;
+        
         div.innerHTML = html;
         container.appendChild(div);
       });
@@ -134,8 +133,16 @@
 
     function apriPopup(index) {
       const carta = tutteLeCarte[index];
+      const dettagli = {};
+
+      for (const chiave in carta) {
+        if (carta[chiave] && carta[chiave].toString().trim() !== '') {
+          dettagli[chiave] = carta[chiave];
+        }
+      }
+
       const content = document.getElementById('popup-content');
-      content.textContent = JSON.stringify(carta, null, 2);
+      content.textContent = JSON.stringify(dettagli, null, 2);
       document.getElementById('overlay').style.display = 'block';
       document.getElementById('popup').style.display = 'block';
     }
