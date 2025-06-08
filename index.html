@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Carte Vita</title>
   <style>
     body {
@@ -52,7 +52,7 @@
 </head>
 <body>
   <h1>Carte Vita</h1>
-  <input type="text" id="search" placeholder="Cerca una carta..." />
+  <input type="text" id="search" placeholder="Cerca una carta...">
   <div id="cards"></div>
 
   <h2>Mazzo Virtuale</h2>
@@ -68,55 +68,23 @@
     let tutteLeCarte = [];
     let mazzo = [];
 
-    // Carica le carte dal JSON
-    async function caricaCarte() {
-      try {
-        const response = await fetch('cards.json');
-        if (!response.ok) throw new Error('Errore caricamento cards.json');
-        const data = await response.json();
+    fetch('cards.json')
+      .then(response => response.json())
+      .then(data => {
         tutteLeCarte = data;
-        console.log('Carte caricate:', tutteLeCarte.length);
-      } catch (e) {
-        console.error('Errore nel fetch:', e);
-        alert('Errore caricando il database delle carte. Controlla cards.json');
-      }
-    }
-
-    // Salva mazzo su localStorage
-    function salvaMazzo() {
-      localStorage.setItem('mazzoVita', JSON.stringify(mazzo));
-      console.log('Mazzo salvato:', mazzo);
-    }
-
-    // Carica mazzo da localStorage
-    function caricaMazzo() {
-      const saved = localStorage.getItem('mazzoVita');
-      if (saved) {
-        mazzo = JSON.parse(saved);
-        console.log('Mazzo caricato:', mazzo);
-      }
-    }
-
-    // Mostra il mazzo in pagina
-    function aggiornaMazzo() {
-      const lista = document.getElementById('mazzo');
-      lista.innerHTML = '';
-      mazzo.forEach((nome, index) => {
-        const li = document.createElement('li');
-        li.textContent = nome;
-        const btn = document.createElement('button');
-        btn.textContent = 'Rimuovi';
-        btn.onclick = () => {
-          mazzo.splice(index, 1);
-          aggiornaMazzo();
-          salvaMazzo();
-        };
-        li.appendChild(btn);
-        lista.appendChild(li);
+        mostraCarte(data);
       });
-    }
 
-    // Mostra carte filtrate o tutte
+    document.getElementById('search').addEventListener('input', function () {
+      const testo = this.value.toLowerCase();
+      const filtrate = tutteLeCarte.filter(c => 
+        (c["NOME CARTA"] || "").toLowerCase().includes(testo) ||
+        (c.EFFETTI || "").toLowerCase().includes(testo) ||
+        (c["ABILITA'"] || "").toLowerCase().includes(testo)
+      );
+      mostraCarte(filtrate);
+    });
+
     function mostraCarte(carte) {
       const container = document.getElementById('cards');
       container.innerHTML = '';
@@ -133,20 +101,36 @@
 
         html += `<button onclick="aggiungiAlMazzo('${carta["NOME CARTA"]}')">Aggiungi al mazzo</button>`;
         html += `<button onclick="apriPopup(${index})">Dettagli</button>`;
-
+        
         div.innerHTML = html;
         container.appendChild(div);
       });
     }
 
-    // Aggiungi carta al mazzo e salva
     function aggiungiAlMazzo(nome) {
       mazzo.push(nome);
       aggiornaMazzo();
-      salvaMazzo();
     }
 
-    // Popup dettagli carta
+    function rimuoviDalMazzo(index) {
+      mazzo.splice(index, 1);
+      aggiornaMazzo();
+    }
+
+    function aggiornaMazzo() {
+      const lista = document.getElementById('mazzo');
+      lista.innerHTML = '';
+      mazzo.forEach((nome, index) => {
+        const li = document.createElement('li');
+        li.textContent = nome;
+        const btn = document.createElement('button');
+        btn.textContent = 'Rimuovi';
+        btn.onclick = () => rimuoviDalMazzo(index);
+        li.appendChild(btn);
+        lista.appendChild(li);
+      });
+    }
+
     function apriPopup(index) {
       const carta = tutteLeCarte[index];
       const dettagli = {};
@@ -163,19 +147,11 @@
       document.getElementById('popup').style.display = 'block';
     }
 
-    // Chiudi popup
     function closePopup() {
       document.getElementById('popup').style.display = 'none';
       document.getElementById('overlay').style.display = 'none';
     }
+  </script>
+</body>
+</html>
 
-    // Quando la pagina è pronta
-    document.addEventListener('DOMContentLoaded', async () => {
-      await caricaCarte();
-      caricaMazzo();
-      aggiornaMazzo();
-      mostraCarte(tutteLeCarte);
-
-      // Setup ricerca
-      document.getElementById('search').addEventListener('input', function () {
-        const testo = this.value.to
